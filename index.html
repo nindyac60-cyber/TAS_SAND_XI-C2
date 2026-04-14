@@ -210,6 +210,46 @@
         </div>
     </div>
 
+    <!-- WhatsApp Order Confirmation Modal -->
+    <div id="whatsapp-modal" class="modal">
+        <div class="modal-content">
+            <button class="modal-close" onclick="closeWhatsAppModal()">&times;</button>
+            <div class="modal-body" style="padding: 20px;">
+                <div class="whatsapp-confirm-header">
+                    <i class="fab fa-whatsapp" style="font-size: 48px; color: #25d366; margin-bottom: 15px;"></i>
+                    <h2>Konfirmasi Pemesanan via WhatsApp</h2>
+                </div>
+
+                <div class="whatsapp-store-info">
+                    <h3>📱 Toko Penerima</h3>
+                    <div class="store-info-detail">
+                        <p><strong>Nama Toko:</strong> <span id="wa-store-name">-</span></p>
+                        <p><strong>Pemilik:</strong> <span id="wa-store-owner">-</span></p>
+                        <p><strong>No. WhatsApp:</strong> <span id="wa-store-phone" class="phone-number">-</span></p>
+                    </div>
+                </div>
+
+                <div class="whatsapp-order-summary">
+                    <h3>📋 Ringkasan Pesanan</h3>
+                    <div id="wa-order-items">
+                        <!-- Order items will be shown here -->
+                    </div>
+                    <div class="summary-total">
+                        <span>Total Pembayaran:</span>
+                        <span id="wa-total-price" style="font-weight: 700; color: #667eea; font-size: 18px;">Rp 0</span>
+                    </div>
+                </div>
+
+                <div class="whatsapp-buttons">
+                    <button class="btn-cancel" onclick="closeWhatsAppModal()">Batal</button>
+                    <button class="btn-send-wa" onclick="sendWhatsAppOrder()">
+                        <i class="fab fa-whatsapp"></i> Kirim Pesanan via WhatsApp
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script src="JS/app.js"></script>
 </body>
 </html>
