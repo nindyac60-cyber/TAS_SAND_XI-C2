@@ -1,592 +1,255 @@
-// ========================
-// DATA MANAGEMENT
-// ========================
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kantin Mbak Sari - Mobile App</title>
+    <link rel="stylesheet" href="CSS/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <!-- Main Container -->
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-content">
+                <h1 id="page-title">Beranda</h1>
+                <p id="page-subtitle">Kantin Mbak Sari</p>
+            </div>
+        </header>
 
-let allProducts = [];
-let mitraData = null;
-let cart = JSON.parse(localStorage.getItem('cart')) || [];
-let purchaseHistory = JSON.parse(localStorage.getItem('history')) || [];
-let currentUser = JSON.parse(localStorage.getItem('currentUser')) || {
-    name: 'Pengguna',
-    email: 'pengguna@example.com'
-};
+        <!-- Pages Container -->
+        <main class="pages-container">
+            <!-- Beranda Page -->
+            <div id="page-beranda" class="page active">
+                <section class="featured">
+                    <h2>Menu Terbaru</h2>
+                    <div id="featured-products" class="products-grid">
+                        <!-- Products will be loaded here -->
+                    </div>
+                </section>
 
-let currentModalProduct = null;
+                <section class="categories">
+                    <h2>Kategori</h2>
+                    <div class="category-filter">
+                        <button class="category-btn active" data-category="Semua">Semua</button>
+                        <button class="category-btn" data-category="Makanan">Makanan</button>
+                        <button class="category-btn" data-category="Minuman">Minuman</button>
+                    </div>
+                </section>
 
-// ========================
-// INITIALIZE APP
-// ========================
+                <section class="all-products">
+                    <h2>Semua Produk</h2>
+                    <div id="all-products" class="products-grid">
+                        <!-- All products will be loaded here -->
+                    </div>
+                </section>
+            </div>
 
-document.addEventListener('DOMContentLoaded', () => {
-    loadData();
-    setupEventListeners();
-    updateCartBadge();
-    showPage('beranda');
-});
+            <!-- Keranjang Page -->
+            <div id="page-keranjang" class="page">
+                <section class="cart-section">
+                    <div id="cart-container">
+                        <!-- Cart items will be displayed here -->
+                    </div>
+                    <div class="cart-summary" id="cart-summary" style="display: none;">
+                        <div class="summary-row">
+                            <span>Subtotal:</span>
+                            <span id="subtotal">Rp 0</span>
+                        </div>
+                        <div class="summary-row">
+                            <span>Pajak (10%):</span>
+                            <span id="tax">Rp 0</span>
+                        </div>
+                        <div class="summary-row total">
+                            <span>Total:</span>
+                            <span id="total">Rp 0</span>
+                        </div>
+                        <button class="btn-checkout">Checkout</button>
+                        <button class="btn-whatsapp" id="btn-whatsapp-order" style="display: none;">
+                            <i class="fab fa-whatsapp"></i> Order via WhatsApp
+                        </button>
+                    </div>
+                    <div class="empty-cart" id="empty-cart" style="display: none;">
+                        <i class="fas fa-shopping-cart"></i>
+                        <p>Keranjang Anda kosong</p>
+                    </div>
+                </section>
+            </div>
 
-// ========================
-// DATA LOADING
-// ========================
+            <!-- Riwayat Page -->
+            <div id="page-riwayat" class="page">
+                <section class="history-section">
+                    <div id="history-container">
+                        <!-- Purchase history will be displayed here -->
+                    </div>
+                    <div class="empty-history" id="empty-history" style="display: none;">
+                        <i class="fas fa-history"></i>
+                        <p>Tidak ada riwayat pembelian</p>
+                    </div>
+                </section>
+            </div>
 
-async function loadData() {
-    try {
-        // Load Produk Data
-        const produkResponse = await fetch('DATA/Tabel Produk_rows.json');
-        allProducts = await produkResponse.json();
+            <!-- Profile Page -->
+            <div id="page-profile" class="page">
+                <section class="profile-section">
+                    <div class="profile-header">
+                        <div class="profile-avatar">
+                            <i class="fas fa-user-circle"></i>
+                        </div>
+                        <h2 id="user-name">Nama Pengguna</h2>
+                        <p id="user-email">email@example.com</p>
+                    </div>
 
-        // Load Mitra Data
-        const mitraResponse = await fetch('DATA/Tabel_mitra_rows.json');
-        mitraData = await mitraResponse.json()[0];
+                    <div class="profile-info">
+                        <div class="info-card">
+                            <h3>Informasi Toko</h3>
+                            <div class="info-detail">
+                                <span class="label">Nama Toko:</span>
+                                <span id="store-name">-</span>
+                            </div>
+                            <div class="info-detail">
+                                <span class="label">Pemilik:</span>
+                                <span id="store-owner">-</span>
+                            </div>
+                            <div class="info-detail">
+                                <span class="label">No. Telepon:</span>
+                                <span id="store-phone">-</span>
+                            </div>
+                            <div class="info-detail">
+                                <span class="label">Email:</span>
+                                <span id="store-email">-</span>
+                            </div>
+                            <div class="info-detail">
+                                <span class="label">Alamat:</span>
+                                <span id="store-address">-</span>
+                            </div>
+                            <div class="info-detail">
+                                <span class="label">Kategori:</span>
+                                <span id="store-category">-</span>
+                            </div>
+                            <div class="info-detail">
+                                <span class="label">Sekolah:</span>
+                                <span id="store-school">-</span>
+                            </div>
+                        </div>
 
-        // Initialize pages
-        displayProducts('Semua', 'featured-products', 6);
-        displayProducts('Semua', 'all-products', allProducts.length);
-        updateProfilePage();
-    } catch (error) {
-        console.error('Error loading data:', error);
-        alert('Gagal memuat data. Silakan refresh halaman.');
-    }
-}
+                        <div class="info-card">
+                            <h3>Statistik</h3>
+                            <div class="stats-grid">
+                                <div class="stat-item">
+                                    <div class="stat-number" id="total-products">0</div>
+                                    <div class="stat-label">Total Produk</div>
+                                </div>
+                                <div class="stat-item">
+                                    <div class="stat-number" id="total-orders">0</div>
+                                    <div class="stat-label">Pesanan</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
 
-// ========================
-// PRODUCT DISPLAY
-// ========================
+                    <button class="btn-logout">Logout</button>
+                </section>
+            </div>
+        </main>
+    </div>
 
-function displayProducts(category, containerId, limit = null) {
-    const container = document.getElementById(containerId);
-    
-    let products = allProducts;
-    if (category !== 'Semua') {
-        products = allProducts.filter(p => p.produk_category === category);
-    }
+    <!-- Fixed Bottom Navigation -->
+    <nav class="bottom-nav">
+        <button class="nav-item active" data-page="beranda">
+            <i class="fas fa-home"></i>
+            <span>Beranda</span>
+        </button>
+        <button class="nav-item" data-page="keranjang">
+            <i class="fas fa-shopping-cart"></i>
+            <span>Keranjang</span>
+            <span class="badge" id="cart-badge">0</span>
+        </button>
+        <button class="nav-item" data-page="riwayat">
+            <i class="fas fa-history"></i>
+            <span>Riwayat</span>
+        </button>
+        <button class="nav-item" data-page="profile">
+            <i class="fas fa-user"></i>
+            <span>Profile</span>
+        </button>
+    </nav>
 
-    if (limit) {
-        products = products.slice(0, limit);
-    }
-
-    container.innerHTML = products.map(product => `
-        <div class="product-card" onclick="openProductModal('${product.produk_id}')">
-            <div class="product-image">
-                <img src="${product.produk_image}" alt="${product.produk_name}" 
-                     onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
-                <div class="image-fallback" style="display: none; align-items: center; justify-content: center; width: 100%; height: 100%; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; font-size: 48px;">
-                    <i class="fas fa-image"></i>
+    <!-- Product Detail Modal -->
+    <div id="product-modal" class="modal">
+        <div class="modal-content">
+            <button class="modal-close">&times;</button>
+            <div class="modal-body">
+                <div class="modal-image-container">
+                    <img id="modal-image" src="" alt="Produk">
+                    <div class="modal-image-fallback" style="display: none; align-items: center; justify-content: center; width: 100%; height: 250px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; font-size: 48px; position: absolute; top: 0; left: 0;">
+                        <i class="fas fa-image"></i>
+                    </div>
+                </div>
+                <div class="modal-info">
+                    <h2 id="modal-name"></h2>
+                    <p id="modal-category" class="category-badge"></p>
+                    <p id="modal-description" class="description"></p>
+                    <div class="modal-price">
+                        <span>Harga:</span>
+                        <span id="modal-price" class="price"></span>
+                    </div>
+                    <div class="modal-stock">
+                        <span>Stok:</span>
+                        <span id="modal-stock"></span>
+                    </div>
+                    <div class="quantity-selector">
+                        <button class="qty-btn" id="qty-minus">-</button>
+                        <input type="number" id="qty-input" value="1" min="1">
+                        <button class="qty-btn" id="qty-plus">+</button>
+                    </div>
+                    <button class="btn-add-cart" id="btn-modal-add-cart">Tambah ke Keranjang</button>
                 </div>
             </div>
-            <div class="product-info">
-                <div class="product-name">${product.produk_name}</div>
-                <div class="product-category">${product.produk_category}</div>
-                <div class="product-footer">
-                    <div class="product-price">Rp ${formatPrice(product.produk_price)}</div>
-                    <button class="btn-add" onclick="event.stopPropagation(); addToCartQuick('${product.produk_id}')">
-                        Beli
+        </div>
+    </div>
+
+    <!-- WhatsApp Order Confirmation Modal -->
+    <div id="whatsapp-modal" class="modal">
+        <div class="modal-content">
+            <button class="modal-close" onclick="closeWhatsAppModal()">&times;</button>
+            <div class="modal-body" style="padding: 20px;">
+                <div class="whatsapp-confirm-header">
+                    <i class="fab fa-whatsapp" style="font-size: 48px; color: #25d366; margin-bottom: 15px;"></i>
+                    <h2>Konfirmasi Pemesanan via WhatsApp</h2>
+                </div>
+
+                <div class="whatsapp-store-info">
+                    <h3>📱 Toko Penerima</h3>
+                    <div class="store-info-detail">
+                        <p><strong>Nama Toko:</strong> <span id="wa-store-name">-</span></p>
+                        <p><strong>Pemilik:</strong> <span id="wa-store-owner">-</span></p>
+                        <p><strong>No. WhatsApp:</strong> <span id="wa-store-phone" class="phone-number">-</span></p>
+                    </div>
+                </div>
+
+                <div class="whatsapp-order-summary">
+                    <h3>📋 Ringkasan Pesanan</h3>
+                    <div id="wa-order-items">
+                        <!-- Order items will be shown here -->
+                    </div>
+                    <div class="summary-total">
+                        <span>Total Pembayaran:</span>
+                        <span id="wa-total-price" style="font-weight: 700; color: #667eea; font-size: 18px;">Rp 0</span>
+                    </div>
+                </div>
+
+                <div class="whatsapp-buttons">
+                    <button class="btn-cancel" onclick="closeWhatsAppModal()">Batal</button>
+                    <button class="btn-send-wa" onclick="sendWhatsAppOrder()">
+                        <i class="fab fa-whatsapp"></i> Kirim Pesanan via WhatsApp
                     </button>
                 </div>
             </div>
         </div>
-    `).join('');
-}
-
-// ========================
-// MODAL FUNCTIONALITY
-// ========================
-
-function openProductModal(productId) {
-    const product = allProducts.find(p => p.produk_id === productId);
-    if (!product) return;
-
-    currentModalProduct = product;
-
-    document.getElementById('modal-name').textContent = product.produk_name;
-    document.getElementById('modal-category').textContent = product.produk_category;
-    document.getElementById('modal-price').textContent = `Rp ${formatPrice(product.produk_price)}`;
-    document.getElementById('modal-stock').textContent = `${product.produk_stock} tersedia`;
-    document.getElementById('modal-image').src = product.produk_image;
-    document.getElementById('modal-image').alt = product.produk_name;
-    document.getElementById('modal-image').onerror = function() {
-        this.style.display = 'none';
-        const fallback = document.querySelector('.modal-image-fallback');
-        if (fallback) {
-            fallback.style.display = 'flex';
-        }
-    };
-    document.getElementById('qty-input').value = 1;
-    document.getElementById('qty-input').max = product.produk_stock;
-
-    const modal = document.getElementById('product-modal');
-    modal.classList.add('show');
-}
-
-function closeProductModal() {
-    const modal = document.getElementById('product-modal');
-    modal.classList.remove('show');
-    currentModalProduct = null;
-}
-
-// Quantity controls
-document.getElementById('qty-plus')?.addEventListener('click', () => {
-    const input = document.getElementById('qty-input');
-    input.value = Math.min(parseInt(input.value) + 1, parseInt(input.max));
-});
-
-document.getElementById('qty-minus')?.addEventListener('click', () => {
-    const input = document.getElementById('qty-input');
-    input.value = Math.max(parseInt(input.value) - 1, 1);
-});
-
-document.getElementById('btn-modal-add-cart')?.addEventListener('click', () => {
-    if (!currentModalProduct) return;
-    
-    const quantity = parseInt(document.getElementById('qty-input').value);
-    addToCart(currentModalProduct.produk_id, quantity);
-    closeProductModal();
-});
-
-document.getElementById('product-modal')?.addEventListener('click', (e) => {
-    if (e.target.id === 'product-modal') {
-        closeProductModal();
-    }
-});
-
-document.querySelector('.modal-close')?.addEventListener('click', closeProductModal);
-
-// ========================
-// CART MANAGEMENT
-// ========================
-
-function addToCart(productId, quantity = 1) {
-    const product = allProducts.find(p => p.produk_id === productId);
-    if (!product) return;
-
-    const existingItem = cart.find(item => item.produk_id === productId);
-
-    if (existingItem) {
-        existingItem.quantity += quantity;
-    } else {
-        cart.push({
-            ...product,
-            quantity: quantity
-        });
-    }
-
-    saveCart();
-    updateCartBadge();
-    showNotification(`${product.produk_name} ditambahkan ke keranjang!`);
-}
-
-function addToCartQuick(productId) {
-    addToCart(productId, 1);
-}
-
-function removeFromCart(productId) {
-    cart = cart.filter(item => item.produk_id !== productId);
-    saveCart();
-    displayCart();
-    updateCartBadge();
-}
-
-function updateCartQuantity(productId, newQuantity) {
-    const item = cart.find(item => item.produk_id === productId);
-    if (item) {
-        item.quantity = Math.max(1, newQuantity);
-        saveCart();
-        displayCart();
-    }
-}
-
-function saveCart() {
-    localStorage.setItem('cart', JSON.stringify(cart));
-}
-
-function updateCartBadge() {
-    const badge = document.getElementById('cart-badge');
-    const count = cart.reduce((sum, item) => sum + item.quantity, 0);
-    badge.textContent = count;
-    if (count === 0) {
-        badge.classList.add('hidden');
-    } else {
-        badge.classList.remove('hidden');
-    }
-}
-
-function displayCart() {
-    const cartContainer = document.getElementById('cart-container');
-    const cartSummary = document.getElementById('cart-summary');
-    const emptyCart = document.getElementById('empty-cart');
-    const whatsappBtn = document.getElementById('btn-whatsapp-order');
-
-    if (cart.length === 0) {
-        cartContainer.innerHTML = '';
-        cartSummary.style.display = 'none';
-        emptyCart.style.display = 'flex';
-        whatsappBtn.style.display = 'none';
-        return;
-    }
-
-    emptyCart.style.display = 'none';
-    cartSummary.style.display = 'block';
-    whatsappBtn.style.display = 'block';
-
-    cartContainer.innerHTML = cart.map(item => `
-        <div class="cart-item">
-            <div class="cart-item-image">
-                <img src="${item.produk_image}" alt="${item.produk_name}" 
-                     onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
-                <div class="image-fallback" style="display: none; align-items: center; justify-content: center; width: 100%; height: 100%; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; font-size: 32px;">
-                    <i class="fas fa-image"></i>
-                </div>
-            </div>
-            <div class="cart-item-details">
-                <div class="cart-item-name">${item.produk_name}</div>
-                <div class="cart-item-price">Rp ${formatPrice(item.produk_price)}</div>
-                <div class="cart-item-controls">
-                    <button class="cart-qty-btn" onclick="updateCartQuantity('${item.produk_id}', ${item.quantity - 1})">−</button>
-                    <span class="cart-qty-display">${item.quantity}</span>
-                    <button class="cart-qty-btn" onclick="updateCartQuantity('${item.produk_id}', ${item.quantity + 1})">+</button>
-                    <button class="cart-remove" onclick="removeFromCart('${item.produk_id}')">Hapus</button>
-                </div>
-            </div>
-        </div>
-    `).join('');
-
-    updateCartSummary();
-}
-
-function updateCartSummary() {
-    const subtotal = cart.reduce((sum, item) => sum + (parseFloat(item.produk_price) * item.quantity), 0);
-    const tax = subtotal * 0.1;
-    const total = subtotal + tax;
-
-    document.getElementById('subtotal').textContent = `Rp ${formatPrice(subtotal.toString())}`;
-    document.getElementById('tax').textContent = `Rp ${formatPrice(tax.toString())}`;
-    document.getElementById('total').textContent = `Rp ${formatPrice(total.toString())}`;
-}
-
-// ========================
-// NAVIGATION
-// ========================
-
-function setupEventListeners() {
-    // Bottom nav buttons
-    document.querySelectorAll('.nav-item').forEach(btn => {
-        btn.addEventListener('click', () => {
-            const page = btn.dataset.page;
-            showPage(page);
-        });
-    });
-
-    // Category filters
-    document.querySelectorAll('.category-btn').forEach(btn => {
-        btn.addEventListener('click', () => {
-            document.querySelectorAll('.category-btn').forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-            
-            const category = btn.dataset.category;
-            displayProducts(category, 'all-products', allProducts.length);
-        });
-    });
-
-    // Checkout button
-    document.querySelector('.btn-checkout')?.addEventListener('click', checkout);
-
-    // WhatsApp Order button
-    document.getElementById('btn-whatsapp-order')?.addEventListener('click', orderViaWhatsApp);
-
-    // Logout button
-    document.querySelector('.btn-logout')?.addEventListener('click', logout);
-}
-
-function showPage(pageName) {
-    // Hide all pages
-    document.querySelectorAll('.page').forEach(page => {
-        page.classList.remove('active');
-    });
-
-    // Show selected page
-    const page = document.getElementById(`page-${pageName}`);
-    if (page) {
-        page.classList.add('active');
-    }
-
-    // Update active nav item
-    document.querySelectorAll('.nav-item').forEach(btn => {
-        btn.classList.remove('active');
-    });
-    document.querySelector(`[data-page="${pageName}"]`)?.classList.add('active');
-
-    // Update header title
-    const titles = {
-        beranda: 'Beranda',
-        keranjang: 'Keranjang Belanja',
-        riwayat: 'Riwayat Pembelian',
-        profile: 'Profile'
-    };
-    document.getElementById('page-title').textContent = titles[pageName] || 'Kantin Mbak Sari';
-
-    // Load page-specific data
-    if (pageName === 'keranjang') {
-        displayCart();
-    } else if (pageName === 'riwayat') {
-        displayHistory();
-    }
-}
-
-// ========================
-// PROFILE PAGE
-// ========================
-
-function updateProfilePage() {
-    if (mitraData) {
-        document.getElementById('store-name').textContent = mitraData.mitra_name || '-';
-        document.getElementById('store-owner').textContent = mitraData.owner_name || '-';
-        document.getElementById('store-phone').textContent = mitraData.phone_owner || '-';
-        document.getElementById('store-email').textContent = mitraData.email_owner || '-';
-        document.getElementById('store-address').textContent = mitraData.addres_owner || '-';
-        document.getElementById('store-category').textContent = mitraData.kategori || '-';
-        document.getElementById('store-school').textContent = mitraData.sekolah || '-';
-        document.getElementById('total-products').textContent = allProducts.length;
-    }
-
-    document.getElementById('user-name').textContent = currentUser.name;
-    document.getElementById('user-email').textContent = currentUser.email;
-    document.getElementById('total-orders').textContent = purchaseHistory.length;
-}
-
-// ========================
-// HISTORY PAGE
-// ========================
-
-function displayHistory() {
-    const historyContainer = document.getElementById('history-container');
-    const emptyHistory = document.getElementById('empty-history');
-
-    if (purchaseHistory.length === 0) {
-        historyContainer.innerHTML = '';
-        emptyHistory.style.display = 'flex';
-        return;
-    }
-
-    emptyHistory.style.display = 'none';
-
-    historyContainer.innerHTML = purchaseHistory.reverse().map((order, index) => `
-        <div class="history-item">
-            <div class="history-header">
-                <span class="history-order-id">Pesanan #${order.orderId}</span>
-                <span class="history-date">${new Date(order.date).toLocaleDateString('id-ID')}</span>
-            </div>
-            <div class="history-products">
-                ${order.items.map(item => `${item.produk_name} x${item.quantity}`).join('<br>')}
-            </div>
-            <div class="history-total">
-                <span>Total</span>
-                <span>Rp ${formatPrice(order.total.toString())}</span>
-            </div>
-            <div class="history-status">Selesai</div>
-        </div>
-    `).join('');
-}
-
-// ========================
-// CHECKOUT
-// ========================
-
-function checkout() {
-    if (cart.length === 0) {
-        alert('Keranjang Anda kosong!');
-        return;
-    }
-
-    const subtotal = cart.reduce((sum, item) => sum + (parseFloat(item.produk_price) * item.quantity), 0);
-    const tax = subtotal * 0.1;
-    const total = subtotal + tax;
-
-    const orderId = 'ORD-' + Date.now();
-    const order = {
-        orderId: orderId,
-        date: new Date().toISOString(),
-        items: cart.map(item => ({
-            produk_id: item.produk_id,
-            produk_name: item.produk_name,
-            produk_price: item.produk_price,
-            quantity: item.quantity
-        })),
-        subtotal: subtotal,
-        tax: tax,
-        total: total
-    };
-
-    purchaseHistory.push(order);
-    localStorage.setItem('history', JSON.stringify(purchaseHistory));
-
-    alert(`Pesanan berhasil!\n\nNomor Pesanan: ${orderId}\nTotal: Rp ${formatPrice(total.toString())}`);
-
-    // Clear cart
-    cart = [];
-    saveCart();
-    updateCartBadge();
-    displayCart();
-
-    // Update profile
-    document.getElementById('total-orders').textContent = purchaseHistory.length;
-
-    // Show confirmation
-    showPage('riwayat');
-}
-
-// ========================
-// WHATSAPP ORDER
-// ========================
-
-function orderViaWhatsApp() {
-    if (cart.length === 0 || !mitraData) {
-        alert('Keranjang kosong atau data toko tidak tersedia!');
-        return;
-    }
-
-    // Calculate totals
-    const subtotal = cart.reduce((sum, item) => sum + (parseFloat(item.produk_price) * item.quantity), 0);
-    const tax = subtotal * 0.1;
-    const total = subtotal + tax;
-
-    // Confirm order
-    const confirmed = confirm(`Apakah Anda yakin ingin memesan via WhatsApp?\n\nTotal: Rp ${formatPrice(total.toString())}\nJumlah item: ${cart.reduce((sum, item) => sum + item.quantity, 0)}`);
-    
-    if (!confirmed) return;
-
-    // Generate order message
-    let message = `*PESANAN BARU - KANTIN MBAK SARI*\n\n`;
-    message += `👤 *Pelanggan:* ${currentUser.name}\n`;
-    message += `📧 *Email:* ${currentUser.email}\n`;
-    message += `📅 *Tanggal:* ${new Date().toLocaleDateString('id-ID')}\n\n`;
-
-    message += `*📋 DETAIL PESANAN:*\n`;
-    cart.forEach((item, index) => {
-        message += `${index + 1}. ${item.produk_name}\n`;
-        message += `   Jumlah: ${item.quantity} x Rp ${formatPrice(item.produk_price)}\n`;
-        message += `   Subtotal: Rp ${formatPrice((parseFloat(item.produk_price) * item.quantity).toString())}\n\n`;
-    });
-
-    message += `*💰 RINGKASAN PEMBAYARAN:*\n`;
-    message += `Subtotal: Rp ${formatPrice(subtotal.toString())}\n`;
-    message += `Pajak (10%): Rp ${formatPrice(tax.toString())}\n`;
-    message += `*TOTAL: Rp ${formatPrice(total.toString())}*\n\n`;
-
-    message += `🏫 *Alamat Pengiriman:* ${mitraData.sekolah}\n`;
-    message += `📍 *Lokasi Toko:* ${mitraData.addres_owner}\n\n`;
-
-    message += `Mohon konfirmasi pesanan ini. Terima kasih! 🙏`;
-
-    // Clean phone number (remove any non-numeric characters except +)
-    const phoneNumber = mitraData.phone_owner.replace(/[^\d+]/g, '');
-    
-    // Ensure it starts with country code (assuming Indonesia +62)
-    let whatsappNumber = phoneNumber;
-    if (phoneNumber.startsWith('0')) {
-        whatsappNumber = '62' + phoneNumber.substring(1);
-    } else if (!phoneNumber.startsWith('+') && !phoneNumber.startsWith('62')) {
-        whatsappNumber = '62' + phoneNumber;
-    }
-
-    // Create WhatsApp URL
-    const whatsappURL = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(message)}`;
-
-    // Open WhatsApp
-    window.open(whatsappURL, '_blank');
-
-    // Optional: Show confirmation
-    showNotification('Membuka WhatsApp untuk pemesanan...');
-}
-
-// ========================
-// LOGOUT
-// ========================
-
-function logout() {
-    const confirmed = confirm('Apakah Anda yakin ingin logout?');
-    if (confirmed) {
-        localStorage.removeItem('currentUser');
-        localStorage.removeItem('cart');
-        localStorage.removeItem('history');
-        
-        currentUser = { name: 'Pengguna', email: 'pengguna@example.com' };
-        cart = [];
-        purchaseHistory = [];
-        
-        updateProfilePage();
-        updateCartBadge();
-        showPage('beranda');
-        
-        alert('Anda telah logout.');
-    }
-}
-
-// ========================
-// UTILITY FUNCTIONS
-// ========================
-
-function formatPrice(price) {
-    return parseInt(price).toLocaleString('id-ID');
-}
-
-function showNotification(message) {
-    // Simple notification
-    const notification = document.createElement('div');
-    notification.style.cssText = `
-        position: fixed;
-        bottom: 100px;
-        left: 50%;
-        transform: translateX(-50%);
-        background: #667eea;
-        color: white;
-        padding: 12px 20px;
-        border-radius: 8px;
-        z-index: 999;
-        animation: slideUp 0.3s ease;
-        font-size: 14px;
-    `;
-    notification.textContent = message;
-    document.body.appendChild(notification);
-
-    setTimeout(() => {
-        notification.remove();
-    }, 3000);
-}
-
-// ========================
-// SEARCH FUNCTIONALITY
-// ========================
-
-function searchProducts(keyword) {
-    if (!keyword) {
-        displayProducts('Semua', 'all-products', allProducts.length);
-        return;
-    }
-
-    const results = allProducts.filter(product =>
-        product.produk_name.toLowerCase().includes(keyword.toLowerCase()) ||
-        product.produk_category.toLowerCase().includes(keyword.toLowerCase())
-    );
-
-    const container = document.getElementById('all-products');
-    container.innerHTML = results.map(product => `
-        <div class="product-card" onclick="openProductModal('${product.produk_id}')">
-            <div class="product-image">
-                <img src="${product.produk_image}" alt="${product.produk_name}" 
-                     onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
-                <div class="image-fallback" style="display: none; align-items: center; justify-content: center; width: 100%; height: 100%; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; font-size: 48px;">
-                    <i class="fas fa-image"></i>
-                </div>
-            </div>
-            <div class="product-info">
-                <div class="product-name">${product.produk_name}</div>
-                <div class="product-category">${product.produk_category}</div>
-                <div class="product-footer">
-                    <div class="product-price">Rp ${formatPrice(product.produk_price)}</div>
-                    <button class="btn-add" onclick="event.stopPropagation(); addToCartQuick('${product.produk_id}')">
-                        Beli
-                    </button>
-                </div>
-            </div>
-        </div>
-    `).join('');
-}
+    </div>
+
+    <script src="JS/app.js"></script>
+</body>
+</html>
