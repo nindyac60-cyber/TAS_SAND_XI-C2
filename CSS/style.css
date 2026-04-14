@@ -221,6 +221,7 @@ body {
 
 .btn-add:active {
     transform: scale(0.95);
+    position: relative;
 }
 
 /* Category Filter */
@@ -718,8 +719,24 @@ body {
     font-weight: 700;
 }
 
+.badge.bounce {
+    animation: badgeBounce 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
 .badge.hidden {
     display: none;
+}
+
+@keyframes badgeBounce {
+    0% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.4);
+    }
+    100% {
+        transform: scale(1);
+    }
 }
 
 /* ========================
@@ -972,18 +989,148 @@ body {
     font-size: 14px;
 }
 
-/* Loading & Animation */
-@keyframes pulse {
-    0%, 100% {
-        opacity: 1;
+/* ========================
+   FUN NOTIFICATION & ANIMATIONS
+   ======================== */
+
+/* Fun Notification Styles */
+.fun-notification {
+    position: fixed;
+    bottom: 100px;
+    left: 50%;
+    transform: translateX(-50%) scale(0.3) rotateZ(-20deg);
+    z-index: 999;
+    opacity: 0;
+    transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+.fun-notification.show {
+    opacity: 1;
+    transform: translateX(-50%) scale(1) rotateZ(0deg);
+}
+
+.notification-content {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 14px 22px;
+    border-radius: 12px;
+    font-size: 15px;
+    font-weight: 600;
+    box-shadow: 0 8px 24px rgba(102, 126, 234, 0.4);
+    backdrop-filter: blur(10px);
+}
+
+.notification-icon {
+    display: inline-block;
+    font-size: 18px;
+    animation: bounceIcon 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+.notification-text {
+    display: inline-block;
+    animation: popIn 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55) 0.1s both;
+}
+
+/* Floating Particles */
+.floating-particle {
+    position: fixed;
+    font-size: 24px;
+    pointer-events: none;
+    animation: floatUp 2s ease-out forwards;
+    z-index: 998;
+}
+
+@keyframes bounceIcon {
+    0% {
+        transform: scale(0) rotate(-180deg);
     }
     50% {
-        opacity: 0.5;
+        transform: scale(1.2) rotate(10deg);
+    }
+    100% {
+        transform: scale(1) rotate(0deg);
     }
 }
 
-.loading {
-    animation: pulse 1.5s ease-in-out infinite;
+@keyframes popIn {
+    0% {
+        opacity: 0;
+        transform: scale(0.5);
+    }
+    100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+@keyframes floatUp {
+    0% {
+        opacity: 1;
+        transform: translateY(0) translateX(0) scale(1);
+    }
+    50% {
+        opacity: 1;
+    }
+    100% {
+        opacity: 0;
+        transform: translateY(-120px) translateX(var(--tx, 0)) scale(0.5);
+    }
+}
+
+/* Randomize float direction */
+.floating-particle:nth-child(1) {
+    --tx: -40px;
+    animation-delay: 0s;
+}
+
+.floating-particle:nth-child(2) {
+    --tx: 40px;
+    animation-delay: 0.1s;
+}
+
+.floating-particle:nth-child(3) {
+    --tx: -60px;
+    animation-delay: 0.2s;
+}
+
+.floating-particle:nth-child(4) {
+    --tx: 60px;
+    animation-delay: 0.3s;
+}
+
+.floating-particle:nth-child(5) {
+    --tx: 0;
+    animation-delay: 0.4s;
+}
+
+/* Ripple Effect */
+.ripple-effect {
+    display: block;
+    position: absolute;
+    width: 40px;
+    height: 40px;
+    background: rgba(255, 255, 255, 0.5);
+    border-radius: 50%;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    animation: ripple 0.6s ease-out;
+}
+
+@keyframes ripple {
+    0% {
+        width: 40px;
+        height: 40px;
+        opacity: 1;
+    }
+    100% {
+        width: 300px;
+        height: 300px;
+        opacity: 0;
+    }
 }
 
 /* ========================
