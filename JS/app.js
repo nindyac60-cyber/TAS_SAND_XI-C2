@@ -33,17 +33,19 @@ async function loadData() {
         // Load Produk Data
         const produkResponse = await fetch('DATA/Tabel Produk_rows.json');
         allProducts = await produkResponse.json();
+        console.log('✅ Produk data loaded:', allProducts.length, 'items');
 
         // Load Mitra Data
         const mitraResponse = await fetch('DATA/Tabel_mitra_rows.json');
         mitraData = await mitraResponse.json()[0];
+        console.log('✅ Mitra data loaded:', mitraData);
 
         // Initialize pages
         displayProducts('Semua', 'featured-products', 6);
         displayProducts('Semua', 'all-products', allProducts.length);
         updateProfilePage();
     } catch (error) {
-        console.error('Error loading data:', error);
+        console.error('❌ Error loading data:', error);
         alert('Gagal memuat data. Silakan refresh halaman.');
     }
 }
@@ -78,7 +80,7 @@ function displayProducts(category, containerId, limit = null) {
                 <div class="product-category">${product.produk_category}</div>
                 <div class="product-footer">
                     <div class="product-price">Rp ${formatPrice(product.produk_price)}</div>
-                    <button class="btn-add" onclick="event.stopPropagation(); addToCartQuick('${product.produk_id}')">
+                    <button class="btn-add" onclick="event.stopPropagation(); addToCartQuick('${product.produk_id}', this)">
                         Beli
                     </button>
                 </div>
@@ -181,7 +183,11 @@ function addToCart(productId, quantity = 1) {
     showNotification(`${product.produk_name} ditambahkan ke keranjang!`);
 }
 
-function addToCartQuick(productId) {
+function addToCartQuick(productId, element) {
+    // Add ripple effect
+    if (element) {
+        createRipple(element);
+    }
     addToCart(productId, 1);
 }
 
@@ -209,6 +215,13 @@ function updateCartBadge() {
     const badge = document.getElementById('cart-badge');
     const count = cart.reduce((sum, item) => sum + item.quantity, 0);
     badge.textContent = count;
+    
+    // Animate badge
+    badge.classList.remove('bounce');
+    // Trigger reflow to restart animation
+    void badge.offsetWidth;
+    badge.classList.add('bounce');
+    
     if (count === 0) {
         badge.classList.add('hidden');
     } else {
@@ -445,7 +458,12 @@ function checkout() {
 // ========================
 
 function orderViaWhatsApp() {
+    console.log('🔵 orderViaWhatsApp called');
+    console.log('mitraData:', mitraData);
+    console.log('cart length:', cart.length);
+    
     if (cart.length === 0 || !mitraData) {
+        console.error('❌ Cart kosong atau mitraData tidak tersedia');
         alert('Keranjang kosong atau data toko tidak tersedia!');
         return;
     }
@@ -456,26 +474,46 @@ function orderViaWhatsApp() {
     const total = subtotal + tax;
 
     // Fill modal with data
-    document.getElementById('wa-store-name').textContent = mitraData.mitra_name;
-    document.getElementById('wa-store-owner').textContent = mitraData.owner_name;
-    document.getElementById('wa-store-phone').textContent = mitraData.phone_owner;
+    console.log('📝 Filling modal with data...');
+    const nameElement = document.getElementById('wa-store-name');
+    const ownerElement = document.getElementById('wa-store-owner');
+    const phoneElement = document.getElementById('wa-store-phone');
+    
+    if (nameElement) nameElement.textContent = mitraData.mitra_name || '-';
+    if (ownerElement) ownerElement.textContent = mitraData.owner_name || '-';
+    if (phoneElement) {
+        phoneElement.textContent = mitraData.phone_owner || '-';
+        console.log('✅ Phone number set:', mitraData.phone_owner);
+    } else {
+        console.error('❌ Phone element not found!');
+    }
     
     // Display order items
     const waOrderItems = document.getElementById('wa-order-items');
-    waOrderItems.innerHTML = cart.map((item, index) => `
-        <div class="wa-item">
-            <span class="wa-item-name">${index + 1}. ${item.produk_name}</span>
-            <span class="wa-item-qty">x${item.quantity}</span>
-            <span class="wa-item-price">Rp ${formatPrice((parseFloat(item.produk_price) * item.quantity).toString())}</span>
-        </div>
-    `).join('');
+    if (waOrderItems) {
+        waOrderItems.innerHTML = cart.map((item, index) => `
+            <div class="wa-item">
+                <span class="wa-item-name">${index + 1}. ${item.produk_name}</span>
+                <span class="wa-item-qty">x${item.quantity}</span>
+                <span class="wa-item-price">Rp ${formatPrice((parseFloat(item.produk_price) * item.quantity).toString())}</span>
+            </div>
+        `).join('');
+    }
 
     // Display total
-    document.getElementById('wa-total-price').textContent = `Rp ${formatPrice(total.toString())}`;
+    const totalElement = document.getElementById('wa-total-price');
+    if (totalElement) {
+        totalElement.textContent = `Rp ${formatPrice(total.toString())}`;
+    }
 
     // Show modal
     const modal = document.getElementById('whatsapp-modal');
-    modal.classList.add('show');
+    if (modal) {
+        modal.classList.add('show');
+        console.log('✅ Modal shown');
+    } else {
+        console.error('❌ Modal element not found!');
+    }
 }
 
 function closeWhatsAppModal() {
@@ -573,27 +611,71 @@ function formatPrice(price) {
 }
 
 function showNotification(message) {
-    // Simple notification
+    // Fun notification with animation
     const notification = document.createElement('div');
-    notification.style.cssText = `
-        position: fixed;
-        bottom: 100px;
-        left: 50%;
-        transform: translateX(-50%);
-        background: #667eea;
-        color: white;
-        padding: 12px 20px;
-        border-radius: 8px;
-        z-index: 999;
-        animation: slideUp 0.3s ease;
-        font-size: 14px;
+    notification.className = 'fun-notification';
+    
+    // Fun icon options
+    const icons = ['🛒', '✨', '🎉', '💫', '⭐', '🌟'];
+    const randomIcon = icons[Math.floor(Math.random() * icons.length)];
+    
+    notification.innerHTML = `
+        <div class="notification-content">
+            <span class="notification-icon">${randomIcon}</span>
+            <span class="notification-text">${message}</span>
+            <span class="notification-icon">${randomIcon}</span>
+        </div>
     `;
-    notification.textContent = message;
+    
     document.body.appendChild(notification);
-
+    
+    // Trigger animation
     setTimeout(() => {
-        notification.remove();
+        notification.classList.add('show');
+    }, 10);
+    
+    // Create floating particles
+    createFloatingParticles(notification);
+    
+    // Remove after animation
+    setTimeout(() => {
+        notification.classList.remove('show');
+        setTimeout(() => {
+            notification.remove();
+        }, 300);
     }, 3000);
+}
+
+function createFloatingParticles(targetElement) {
+    // Create fun floating particles
+    for (let i = 0; i < 5; i++) {
+        const particle = document.createElement('div');
+        particle.className = 'floating-particle';
+        particle.innerHTML = '💚';
+        
+        const rect = targetElement.getBoundingClientRect();
+        particle.style.left = rect.left + rect.width / 2 + 'px';
+        particle.style.top = rect.top + rect.height / 2 + 'px';
+        
+        document.body.appendChild(particle);
+        
+        // Remove particle after animation
+        setTimeout(() => {
+            particle.remove();
+        }, 2000);
+    }
+}
+
+function createRipple(element) {
+    const ripple = document.createElement('span');
+    ripple.classList.add('ripple-effect');
+    element.style.position = 'relative';
+    element.style.overflow = 'hidden';
+    element.appendChild(ripple);
+    
+    setTimeout(() => {
+        ripple.remove();
+    }, 600);
 }
 
 // ========================
@@ -626,7 +708,7 @@ function searchProducts(keyword) {
                 <div class="product-category">${product.produk_category}</div>
                 <div class="product-footer">
                     <div class="product-price">Rp ${formatPrice(product.produk_price)}</div>
-                    <button class="btn-add" onclick="event.stopPropagation(); addToCartQuick('${product.produk_id}')">
+                    <button class="btn-add" onclick="event.stopPropagation(); addToCartQuick('${product.produk_id}', this)">
                         Beli
                     </button>
                 </div>
