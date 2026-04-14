@@ -21,6 +21,12 @@ document.addEventListener('DOMContentLoaded', () => {
     loadData();
     setupEventListeners();
     updateCartBadge();
+    
+    // Trigger splash screen and animations
+    setTimeout(() => {
+        animatePageEntry();
+    }, 2800);
+    
     showPage('beranda');
 });
 
@@ -334,14 +340,15 @@ function showPage(pageName) {
     });
     document.querySelector(`[data-page="${pageName}"]`)?.classList.add('active');
 
-    // Update header title
+    // Update header title with animation
     const titles = {
         beranda: 'Beranda',
         keranjang: 'Keranjang Belanja',
         riwayat: 'Riwayat Pembelian',
         profile: 'Profile'
     };
-    document.getElementById('page-title').textContent = titles[pageName] || 'Kantin Mbak Sari';
+    
+    animateHeaderTitle(titles[pageName] || 'Kantin Mbak Sari');
 
     // Load page-specific data
     if (pageName === 'keranjang') {
@@ -354,6 +361,33 @@ function showPage(pageName) {
 // ========================
 // PROFILE PAGE
 // ========================
+
+function animateHeaderTitle(newTitle) {
+    const titleElement = document.getElementById('page-title');
+    
+    // Remove animation class if exists
+    titleElement.classList.remove('page-title-animated');
+    
+    // Trigger reflow to restart animation
+    void titleElement.offsetWidth;
+    
+    // Update text
+    titleElement.textContent = newTitle;
+    
+    // Add animation class
+    titleElement.classList.add('page-title-animated');
+}
+
+function animatePageEntry() {
+    // Add animation to elements
+    const pageTitle = document.getElementById('page-title');
+    const pageSubtitle = document.getElementById('page-subtitle');
+    const headerIcon = document.querySelector('.header-icon');
+    
+    if (pageTitle) pageTitle.classList.add('page-title-animated');
+    if (pageSubtitle) pageSubtitle.classList.add('page-subtitle-animated');
+    if (headerIcon) headerIcon.classList.add('animated');
+}
 
 function updateProfilePage() {
     if (mitraData) {
